@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Buzzlytics Extension",
+  "version": "1.0.0",
+  "action": { "default_popup": "index.html" },
+  "background": {
+	  "service_worker": "src/background.ts",
+	  "type": "module"
+  },
+  "permissions": [
+	  "tabs", "scripting"
+  ],
+  "host_permissions": ["https://*/*"],
+  "content_scripts": [
+	{
+		"js": ["src/content.tsx"],
+		"matches": ["https://*.tiktok.com/*"],
+		"run_at": "document_end"
+	}
+  ]
+}
