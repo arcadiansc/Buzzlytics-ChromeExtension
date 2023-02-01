@@ -1,8 +1,0 @@
-<html>
-    <script>
-        window.addEventListener('message', async function (event) {
-			console.log("received event: ", event);
-            event.source.window.postMessage(eval(event.data), event.origin);
-        });
-    </script>
-</html>

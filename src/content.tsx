@@ -1,4 +1,4 @@
-import "./test";
+import "./tiktok-bio";
 
 declare global {
   interface Window {
@@ -76,7 +76,7 @@ function main() {
   showLoadingUI();
   window.setTimeout(() => {
     const script = document.createElement("script");
-    script.setAttribute("src", chrome.runtime.getURL("src/test.ts.js"));
+    script.setAttribute("src", chrome.runtime.getURL("src/tiktok-bio.ts.js"));
     (document.head || document.documentElement).appendChild(script);
     script?.parentNode?.removeChild(script);
   }, 100);
