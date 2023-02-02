@@ -1,0 +1,33 @@
+export interface XTTParamsPayload {
+  aid: number;
+  app_name: string;
+  channel: string;
+  device_platform: string;
+  device_id: number;
+  region: string;
+  priority_region: string;
+  os: string;
+  referer: string;
+  root_referer: string;
+  cookie_enabled: boolean;
+  screen_width: number;
+  screen_height: number;
+  browser_language: string;
+  browser_platform: string;
+  browser_name: string;
+  browser_version: string;
+  browser_online: boolean;
+  app_language: string;
+  webcast_language: string;
+  tz_name: string;
+  is_page_visible: boolean;
+  focus_state: boolean;
+  is_fullscreen: number;
+  history_len: number;
+  battery_info: number;
+  from_page: string;
+  secUid: string;
+  count: number;
+  cursor: string;
+  language: string;
+}

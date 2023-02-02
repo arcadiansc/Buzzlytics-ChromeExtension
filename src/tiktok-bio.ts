@@ -1,5 +1,6 @@
-import { ItemModule, SigiStateI } from "./interfaces/sigi_state";
+import { TikTokVideo } from "./interfaces/tiktok-video";
 import { UserDetailResponse } from "./interfaces/user-detail";
+import { XTTParamsPayload } from "./interfaces/XTTParamsPayload";
 
 function sleep(timeout: number) {
   return new Promise((resolve) => {
@@ -9,13 +10,13 @@ function sleep(timeout: number) {
   });
 }
 
-function aggregateVideos(videos: { [key: string]: ItemModule }) {
+function aggregateVideos(videos: TikTokVideo[]): Metadata {
   let views = 0;
   let comments = 0;
   let shares = 0;
   let likes = 0;
 
-  for (const [key, value] of Object.entries(videos)) {
+  for (const value of videos) {
     views += value.stats.playCount;
     comments += value.stats.commentCount;
     shares += value.stats.shareCount;
@@ -36,11 +37,11 @@ function aggregateVideos(videos: { [key: string]: ItemModule }) {
   };
 }
 
-function _arrayBufferToBase64(buffer: any) {
-  var binary = "";
-  var bytes = new Uint8Array(buffer);
-  var len = bytes.byteLength;
-  for (var i = 0; i < len; i++) {
+function _arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  let bytes = new Uint8Array(buffer);
+  let len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
@@ -50,16 +51,16 @@ function _arrayBufferToBase64(buffer: any) {
 // for x-tt-params ported over to use
 // the Browsers SubtleCrypto API instead
 // of crypto-js
-async function encrypt(e: any) {
+async function encrypt(e: XTTParamsPayload): Promise<string> {
   let t = [];
-  Object.keys(e).forEach((i) => {
+  (Object.keys(e) as Array<keyof typeof e>).forEach((i) => {
     const o = i + "=" + e[i];
     t.push(o);
   });
 
   t.push("is_encryption=1");
 
-  let i = (e: any) => {
+  let i = (e: string) => {
     let i = e.toString();
     const o = i.length;
     return (
@@ -87,7 +88,7 @@ async function encrypt(e: any) {
 
   return _arrayBufferToBase64(a);
 }
-function formVideoQuery(secId: string) {
+function formVideoQuery(secId: string): XTTParamsPayload {
   return {
     aid: 1988,
     app_name: "tiktok_web",
@@ -107,9 +108,6 @@ function formVideoQuery(secId: string) {
     browser_name: "Mozilla",
     browser_version: window.navigator.userAgent,
     browser_online: true,
-    // verifyFp: "verify_kys23e2d_VsTcIz9l_SMhr_4wDB_8T2q_GvdRka8Aa5xw",
-    // verifyFp: undefined,
-    // userId: undefined,
     app_language: "en",
     webcast_language: "en",
     tz_name: "America/New_York",
@@ -157,7 +155,7 @@ interface Metadata {
   totalVideos: number;
 }
 
-function generateUI(metadata: Metadata) {
+function generateUI(metadata: Metadata, allVideos: TikTokVideo[]): void {
   const userBio = document.querySelector("[data-e2e=user-bio]");
   if (!userBio) return console.log("NO user bio found unable to render UI");
   const parent = userBio.parentNode;
@@ -218,6 +216,22 @@ function generateUI(metadata: Metadata) {
 
   container.appendChild(statsContainer);
 
+  const downloadVideosButton = document.createElement("button");
+  downloadVideosButton.innerText = "Download Videos - CSV";
+  downloadVideosButton.style.marginTop = "10px";
+  downloadVideosButton.style.background = "rgba(254, 44, 85, 1)";
+  downloadVideosButton.style.border = "1px solid rgba(254, 44, 85, 1)";
+  downloadVideosButton.style.width = "200px";
+  downloadVideosButton.style.padding = "5px";
+  downloadVideosButton.style.borderRadius = "4px";
+  downloadVideosButton.style.cursor = "pointer";
+  downloadVideosButton.style.color = "white";
+  downloadVideosButton.style.fontWeight = "bold";
+
+  downloadVideosButton.onclick = () => { downloadVideos(allVideos) }
+
+  container.appendChild(downloadVideosButton);
+
   const loading = document.getElementById("loading-container-buzzlytics");
   if (loading) {
     loading.remove();
@@ -226,7 +240,41 @@ function generateUI(metadata: Metadata) {
   parent?.insertBefore(container, userBio);
 }
 
-async function fetchUser() {
+function downloadFileFromText(filename: string, content: string) {
+  let a = document.createElement("a");
+  let blob = new Blob([content], { type: "text/plain;charset=UTF-8" });
+  a.href = window.URL.createObjectURL(blob);
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click(); //this is probably the key - simulating a click on a download link
+  a.remove();
+}
+
+
+function cleanValue(value: string) {
+  return value ? value.replace(/,/g, "") : "";
+}
+
+function downloadVideos(videos: TikTokVideo[]) {
+  let videosCsv =
+      "Views,Comments,Likes,Shares,Duration,Created,Description,Link\n";
+
+  for (const video of videos) {
+    videosCsv += `${video.stats.playCount},${video.stats.commentCount},${video.stats.diggCount},${
+        video.stats.shareCount
+    },${video.video.duration},${new Date(
+        video.createTime * 1000
+    )},${cleanValue(
+        video.desc
+    )},https://www.tiktok.com/@${video.author.uniqueId}/video/${video.id}\n`;
+  }
+
+  downloadFileFromText("buzzlytics-stats-" + videos[0].author.uniqueId + ".csv", videosCsv);
+
+}
+
+async function fetchUser(): Promise<string> {
   const username = new URL(window.location.href).pathname.split("@")[1];
   if (!username)
     throw new Error("Error fetching username no username found in url");
@@ -250,7 +298,10 @@ async function fetchUser() {
   }
 }
 
-async function fetchAllVideos(query: any, videos: any[] = []): Promise<any> {
+async function fetchAllVideos(
+  query: XTTParamsPayload,
+  videos: TikTokVideo[] = []
+): Promise<TikTokVideo[]> {
   // We have to reencrypt the query every request since we modify the
   // cursor
   const params = await encrypt(query);
@@ -295,7 +346,7 @@ async function fetchAllVideos(query: any, videos: any[] = []): Promise<any> {
     const query = formVideoQuery(secUid);
     const allVideos = await fetchAllVideos(query);
     const aggregated = aggregateVideos(allVideos);
-    generateUI(aggregated);
+    generateUI(aggregated, allVideos);
   } catch (e) {
     // TODO show error UI
   }

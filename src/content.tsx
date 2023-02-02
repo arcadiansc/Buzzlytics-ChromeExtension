@@ -1,8 +1,9 @@
 import "./tiktok-bio";
+import {SigiStateI} from "./interfaces/sigi_state";
 
 declare global {
   interface Window {
-    SIGI_STATE: any;
+    SIGI_STATE: SigiStateI;
   }
 }
 
@@ -86,7 +87,7 @@ function main() {
 // That means our content script can only run once.
 // By listening in on DOM mutations we can check if the URL has changed
 // and only then trigger our script.
-function addLocationObserver(callback: any) {
+function addLocationObserver(callback: () => void) {
   const config = { attributes: true, childList: true, subtree: true };
   const observer = new MutationObserver(callback);
   observer.observe(document.body, config);
@@ -97,6 +98,7 @@ function observerCallback() {
   if (
     prevUrl !== window.location.href &&
     window.location.href.includes("tiktok.com/@") &&
+    // We don't want to render when there are other path parameters
     !window.location.pathname.split("/")[2]
   ) {
     prevUrl = window.location.href;
