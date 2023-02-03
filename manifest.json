@@ -1,10 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Buzzlytics Extension",
-  "version": "1.0.0",
+  "name": "Buzzlytics - Advanced Tiktok Metrics",
+  "version": "1.0.2",
   "action": { "default_popup": "index.html" },
   "permissions": [],
-  "host_permissions": ["https://*/*"],
   "content_scripts": [
 	{
 		"js": ["src/content.tsx"],
