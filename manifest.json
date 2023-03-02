@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Buzzlytics - Advanced Tiktok Metrics",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "action": { "default_popup": "index.html" },
   "permissions": [],
   "content_scripts": [
@@ -9,6 +9,12 @@
 		"js": ["src/content.tsx"],
 		"matches": ["https://*.tiktok.com/*"],
 		"run_at": "document_end"
+	}
+  ],
+  "web_accessible_resources": [
+	{
+		"resources": ["src/tiktok-bio.ts"],
+		"matches": ["https://*.tiktok.com/*"]
 	}
   ],
   "icons": {

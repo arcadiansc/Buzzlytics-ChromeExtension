@@ -228,7 +228,9 @@ function generateUI(metadata: Metadata, allVideos: TikTokVideo[]): void {
   downloadVideosButton.style.color = "white";
   downloadVideosButton.style.fontWeight = "bold";
 
-  downloadVideosButton.onclick = () => { downloadVideos(allVideos) }
+  downloadVideosButton.onclick = () => {
+    downloadVideos(allVideos);
+  };
 
   container.appendChild(downloadVideosButton);
 
@@ -251,27 +253,37 @@ function downloadFileFromText(filename: string, content: string) {
   a.remove();
 }
 
-
 function cleanValue(value: string) {
   return value ? value.replace(/,/g, "") : "";
 }
 
 function downloadVideos(videos: TikTokVideo[]) {
   let videosCsv =
-      "Views,Comments,Likes,Shares,Duration,Created,Description,Link\n";
+    "Views,Comments,Likes,Shares,Duration,Created,Description,Link\n";
 
   for (const video of videos) {
-    videosCsv += `${video.stats.playCount},${video.stats.commentCount},${video.stats.diggCount},${
-        video.stats.shareCount
-    },${video.video.duration},${new Date(
-        video.createTime * 1000
-    )},${cleanValue(
-        video.desc
-    )},https://www.tiktok.com/@${video.author.uniqueId}/video/${video.id}\n`;
+    let date = new Date(video.createTime * 1000);
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    let d = date.getDate();
+
+    let dateString = `${year}-${month > 9 ? month : `0${month}`}-${
+      d > 9 ? d : `0${d}`
+    }`;
+
+    videosCsv += `${video.stats.playCount},${video.stats.commentCount},${
+      video.stats.diggCount
+    },${video.stats.shareCount},${
+      video.video.duration
+    },${dateString},${cleanValue(video.desc)},https://www.tiktok.com/@${
+      video.author.uniqueId
+    }/video/${video.id}\n`;
   }
 
-  downloadFileFromText("buzzlytics-stats-" + videos[0].author.uniqueId + ".csv", videosCsv);
-
+  downloadFileFromText(
+    "buzzlytics-stats-" + videos[0].author.uniqueId + ".csv",
+    videosCsv
+  );
 }
 
 async function fetchUser(): Promise<string> {
