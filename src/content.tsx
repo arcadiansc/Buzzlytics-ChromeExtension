@@ -1,39 +1,11 @@
 import "./tiktok-bio";
-import {SigiStateI} from "./interfaces/sigi_state";
+import { SigiStateI } from "./interfaces/sigi_state";
+import { createLoadingUI, getSpinner } from "./utils";
 
 declare global {
   interface Window {
     SIGI_STATE: SigiStateI;
   }
-}
-
-function getSpinner() {
-  const span = document.createElement("span");
-  span.className = "loader";
-
-  const style = document.createElement("style");
-  document.head.append(style);
-  style.textContent = `.loader {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #000000;
-    border-bottom-color: transparent;
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
-    }
-
-    @keyframes rotation {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-    } `;
-
-  return span;
 }
 
 function showLoadingUI() {
@@ -43,20 +15,7 @@ function showLoadingUI() {
   const spinner = getSpinner();
 
   const parent = userBio.parentNode;
-  const container = document.createElement("div");
-  container.id = "loading-container-buzzlytics";
-  container.style.marginTop = "10px";
-  container.style.alignItems = "center";
-  container.style.display = "flex";
-
-  const text = document.createElement("h3");
-  text.id = "loading-text-buzzlytics";
-  text.style.padding = "0px";
-  text.style.marginRight = "10px";
-  text.innerText = "Loading Buzzlytics Metrics";
-  container.appendChild(text);
-  container.appendChild(spinner);
-
+  const container = createLoadingUI(spinner);
   parent?.insertBefore(container, userBio);
 }
 

@@ -9,11 +9,16 @@
 		"js": ["src/content.tsx"],
 		"matches": ["https://*.tiktok.com/*"],
 		"run_at": "document_end"
+	},
+	{
+		"js": ["src/reels-content.tsx"],
+		"matches": ["https://*.instagram.com/*"],
+		"run_at": "document_end"
 	}
   ],
   "web_accessible_resources": [
 	{
-		"resources": ["src/tiktok-bio.ts"],
+		"resources": ["src/tiktok-bio.ts", "src/utils.ts"],
 		"matches": ["https://*.tiktok.com/*"]
 	}
   ],
